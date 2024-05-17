@@ -1,0 +1,24 @@
+services:
+  server:
+    image: node:20
+    container_name: skyoffice-server
+    working_dir: /usr/app/SkyOffice
+    tty: true
+    ports:
+      - "2567:2567"
+    volumes:
+      - "./:/usr/app/SkyOffice"
+    command:
+      bash -c "yarn && yarn start"
+  client:
+    image: node:20
+    container_name: skyoffice-client
+    working_dir: /usr/app/SkyOffice/client
+    tty: true
+    ports:
+      - "80:5173"
+    volumes:
+      - "./:/usr/app/SkyOffice"
+    command:
+      bash -c "yarn && yarn dev --host"
+
