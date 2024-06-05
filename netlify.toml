@@ -1,3 +1,4 @@
+#ビルド設定とリダイレクト設定
 [build]  
   command = "cd types && yarn && cd ../client && yarn && yarn build"
   publish = "client/dist"
