@@ -79,7 +79,7 @@ export default class MyPlayer extends Player {
 
     switch (this.playerBehavior) {
       case PlayerBehavior.IDLE:
-        // if press E in front of selected chair
+        // if press E in front of selected chair Eを押して椅子が選択されていたら椅子に座る動作
         if (Phaser.Input.Keyboard.JustDown(keyE) && item?.itemType === ItemType.CHAIR) {
           const chairItem = item as Chair
           /**
@@ -126,6 +126,7 @@ export default class MyPlayer extends Player {
           return
         }
 
+        // プレイヤーの移動
         const speed = 200
         let vx = 0
         let vy = 0
@@ -183,7 +184,7 @@ export default class MyPlayer extends Player {
         break
 
       case PlayerBehavior.SITTING:
-        // back to idle if player press E while sitting
+        // back to idle if player press E while sitting　座ってる状態だったらEで立つ
         if (Phaser.Input.Keyboard.JustDown(keyE)) {
           const parts = this.anims.currentAnim.key.split('_')
           parts[1] = 'idle'
