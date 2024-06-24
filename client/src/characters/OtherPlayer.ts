@@ -12,6 +12,7 @@ export default class OtherPlayer extends Player {
   private connected = false
   private playContainerBody: Phaser.Physics.Arcade.Body
   private myPlayer?: MyPlayer
+  private backgroundGraphics: Phaser.GameObjects.Graphics
 
   constructor(
     scene: Phaser.Scene,
@@ -27,7 +28,25 @@ export default class OtherPlayer extends Player {
 
     this.playerName.setText(name)
     this.playContainerBody = this.playerContainer.body as Phaser.Physics.Arcade.Body
+
+    // 色付き矩形用グラフィックオブジェクトを作成
+    this.backgroundGraphics = this.scene.add.graphics()
+    this.drawBackground()  // 色付き矩形を描画
   }
+
+  private drawBackground() {
+    const backgroundColor = 0x0000ff  // 青色
+    const backgroundAlpha = 0.3  // 透明度
+    this.backgroundGraphics.clear()
+    this.backgroundGraphics.fillStyle(backgroundColor, backgroundAlpha)
+    this.backgroundGraphics.fillRect(
+      -this.width / 2,
+      -this.height / 2,
+      this.width,
+      this.height
+    )
+  }
+
 
   makeCall(myPlayer: MyPlayer, webRTC: WebRTC) {
     this.myPlayer = myPlayer
@@ -88,6 +107,7 @@ export default class OtherPlayer extends Player {
 
   destroy(fromScene?: boolean) {
     this.playerContainer.destroy()
+    this.backgroundGraphics.destroy()  // 色付き矩形用グラフィックオブジェクトを破棄
 
     super.destroy(fromScene)
   }
@@ -95,6 +115,10 @@ export default class OtherPlayer extends Player {
   /** preUpdate is called every frame for every game object. */
   preUpdate(t: number, dt: number) {
     super.preUpdate(t, dt)
+
+    // 位置を更新して背景色を描画
+    this.backgroundGraphics.setPosition(this.x, this.y)
+    this.drawBackground()
 
     // if Phaser has not updated the canvas (when the game tab is not active) for more than 1 sec
     // directly snap player to their current locations
