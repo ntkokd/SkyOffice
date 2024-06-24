@@ -102,20 +102,21 @@ const ProgressBar = styled(LinearProgress)`
 `
 
 export default function RoomSelectionDialog() {
+  //ここで定義してる [名前, 関数名] = 
   const [showCustomRoom, setShowCustomRoom] = useState(false)
   const [showCreateRoomForm, setShowCreateRoomForm] = useState(false)
   const [showSnackbar, setShowSnackbar] = useState(false)
   const lobbyJoined = useAppSelector((state) => state.room.lobbyJoined)
 
   const handleConnect = () => {
-    if (lobbyJoined) {
+    if (lobbyJoined) {  // 既にロビーに参加している場合の処理
       const bootstrap = phaserGame.scene.keys.bootstrap as Bootstrap
       bootstrap.network
         .joinOrCreatePublic()
-        .then(() => bootstrap.launchGame())
-        .catch((error) => console.error(error))
-    } else {
-      setShowSnackbar(true)
+        .then(() => bootstrap.launchGame())   // joinOrCrietePublicの処理が終わったらゲームを開始する
+        .catch((error) => console.error(error))   // エラー処理
+    } else {  // ロビーに参加していない場合の処理
+      setShowSnackbar(true)  // スナックバーを表示する
     }
   }
 
@@ -140,7 +141,7 @@ export default function RoomSelectionDialog() {
       </Snackbar>
       <Backdrop>
         <Wrapper>
-          {showCreateRoomForm ? (
+          {showCreateRoomForm ? ( //if showCreateRoomFormがtrue
             <CustomRoomWrapper>
               <TitleWrapper>
                 <IconButton className="back-button" onClick={() => setShowCreateRoomForm(false)}>
@@ -150,7 +151,7 @@ export default function RoomSelectionDialog() {
               </TitleWrapper>
               <CreateRoomForm />
             </CustomRoomWrapper>
-          ) : showCustomRoom ? (
+          ) : showCustomRoom ? ( //elif　showCustomRoomがtrue
             <CustomRoomWrapper>
               <TitleWrapper>
                 <IconButton className="back-button" onClick={() => setShowCustomRoom(false)}>
@@ -177,7 +178,7 @@ export default function RoomSelectionDialog() {
                 Create new room
               </Button>
             </CustomRoomWrapper>
-          ) : (
+          ) : ( //else
             <>
               <Title>Welcome to SkyOffice</Title>
               <Content>
