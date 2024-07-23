@@ -26,7 +26,7 @@ function App() {
   const roomJoined = useAppSelector((state) => state.room.roomJoined)
 
   let ui: JSX.Element
-  if (loggedIn) {
+  if (loggedIn) {// 部屋に入ってログインしている状態
     if (computerDialogOpen) {
       /* Render ComputerDialog if user is using a computer. */
       ui = <ComputerDialog />
@@ -44,10 +44,10 @@ function App() {
         </>
       )
     }
-  } else if (roomJoined) {
+  } else if (roomJoined) { //部屋に入っているがログインが完了していない状態
     /* Render LoginDialog if not logged in but selected a room. */
     ui = <LoginDialog />
-  } else {
+  } else { //部屋に入る前の状態
     /* Render RoomSelectionDialog if yet selected a room. */
     ui = <RoomSelectionDialog />
   }
