@@ -93,7 +93,7 @@ export default class Game extends Phaser.Scene {
 
     //プレイヤーの追加
     this.myPlayer = this.add.myPlayer(705, 500, 'adam', this.network.mySessionId)//初期位置705,500にプレイヤーオブジェクトを追加
-    //プレイやオブジェクトの追加
+    //プレイヤーオブジェクトの追加
     this.playerSelector = new PlayerSelector(this, 0, 0, 16, 16)
 
     // import chair objects from Tiled map to Phaser
