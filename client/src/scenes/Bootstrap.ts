@@ -1,3 +1,4 @@
+//ゲームの初期設定
 import Phaser from 'phaser'
 import Network from '../services/Network'
 import { BackgroundMode } from '../../../types/BackgroundMode'
@@ -13,6 +14,7 @@ export default class Bootstrap extends Phaser.Scene {
   }
 
   preload() {
+    //アセットの読み込み
     this.load.atlas(
       'cloud_day',
       'assets/background/cloud_day.png',
@@ -76,15 +78,15 @@ export default class Bootstrap extends Phaser.Scene {
       frameWidth: 32,
       frameHeight: 48,
     })
-
+    //プリロードが完了したらstateをtrueに設定　背景シーンを起動
     this.load.on('complete', () => {
       this.preloadComplete = true
       this.launchBackground(store.getState().user.backgroundMode)
     })
   }
 
-  init() {
-    this.network = new Network()
+  init() {//初期化メゾット
+    this.network = new Network() //Networkの新しいインスタンスを作成・this.networkに代入
   }
 
   private launchBackground(backgroundMode: BackgroundMode) {
@@ -92,18 +94,19 @@ export default class Bootstrap extends Phaser.Scene {
   }
 
   launchGame() {
-    if (!this.preloadComplete) return
-    this.network.webRTC?.checkPreviousPermission()
+    if (!this.preloadComplete) return //アセットの読み込みが完了しているか
+    this.network.webRTC?.checkPreviousPermission() //webRTC プロパティが存在する場合、過去の WebRTC 許可設定をチェックするメソッドを呼び出す
+    //'game' シーンに対して、network という名前のプロパティを持つオブジェクトを渡す
     this.scene.launch('game', {
       network: this.network,
     })
 
     // update Redux state
-    store.dispatch(setRoomJoined(true))
+    store.dispatch(setRoomJoined(true))//ルームに参加した」ことを状態に反映
   }
 
-  changeBackgroundMode(backgroundMode: BackgroundMode) {
-    this.scene.stop('background')
-    this.launchBackground(backgroundMode)
+  changeBackgroundMode(backgroundMode: BackgroundMode) {//ゲームの背景モードを変更するためのメソッド
+    this.scene.stop('background') //現在の背景シーンを停止
+    this.launchBackground(backgroundMode) //新しい背景モードで再起動
   }
 }

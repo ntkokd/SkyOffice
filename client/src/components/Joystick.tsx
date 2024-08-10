@@ -1,3 +1,5 @@
+//Joystickの操作
+
 import { Joystick } from 'react-joystick-component'
 
 export interface JoystickMovement {
