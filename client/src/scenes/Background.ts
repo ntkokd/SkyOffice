@@ -1,3 +1,5 @@
+//昼と夜で背景を変更
+
 import Phaser from 'phaser'
 import { BackgroundMode } from '../../../types/BackgroundMode'
 
