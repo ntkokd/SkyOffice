@@ -1,3 +1,4 @@
+//デバック情報の描写
 import Phaser from 'phaser'
 
 export const debugDraw = (layer: Phaser.Tilemaps.TilemapLayer, scene: Phaser.Scene) => {
