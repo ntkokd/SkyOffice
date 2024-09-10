@@ -1,3 +1,5 @@
+//ゲームアプリケーションにおけるユーザー関連の状態を管理
+//ReduxはReactアプリケーションでよく使われる状態管理ツールで、スライスは全体の状態の一部分と、その状態を変更するアクションやリデューサーを定義する方法
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { sanitizeId } from '../util'
 import { BackgroundMode } from '../../../types/BackgroundMode'
@@ -20,7 +22,7 @@ export const userSlice = createSlice({
     playerNameMap: new Map<string, string>(),
     showJoystick: window.innerWidth < 650,
   },
-  reducers: {
+  reducers: {//状態の変更を処理する関数
     toggleBackgroundMode: (state) => {
       const newMode =
         state.backgroundMode === BackgroundMode.DAY ? BackgroundMode.NIGHT : BackgroundMode.DAY

@@ -1,3 +1,4 @@
+//ゲーム内でのプレイヤーキャラクターの特定の動作やインタラクションを提供
 import Phaser from 'phaser'
 import PlayerSelector from './PlayerSelector'
 import { PlayerBehavior } from '../../../types/PlayerBehavior'
@@ -17,10 +18,10 @@ import { JoystickMovement } from '../components/Joystick'
 import { openURL } from '../utils/helpers'
 
 export default class MyPlayer extends Player {
-  private playContainerBody: Phaser.Physics.Arcade.Body
+  private playContainerBody: Phaser.Physics.Arcade.Body //物理的な動作や衝突を処理
   private chairOnSit?: Chair
   public joystickMovement?: JoystickMovement
-  constructor(
+  constructor(//プレイヤーの位置、テクスチャなどの属性を初期化
     scene: Phaser.Scene,
     x: number,
     y: number,
@@ -28,27 +29,27 @@ export default class MyPlayer extends Player {
     id: string,
     frame?: string | number
   ) {
-    super(scene, x, y, texture, id, frame)
+    super(scene, x, y, texture, id, frame)//親クラスのconstructor（player)に渡す
     this.playContainerBody = this.playerContainer.body as Phaser.Physics.Arcade.Body
   }
 
-  setPlayerName(name: string) {
+  setPlayerName(name: string) { //プレイヤーの名前を更新し、ゲームの他の部分に通知するイベントを発行
     this.playerName.setText(name)
     phaserEvents.emit(Event.MY_PLAYER_NAME_CHANGE, name)
     store.dispatch(pushPlayerJoinedMessage(name))
   }
 
-  setPlayerTexture(texture: string) {
+  setPlayerTexture(texture: string) { //プレイヤーの外見を変更し、アニメーションを更新
     this.playerTexture = texture
     this.anims.play(`${this.playerTexture}_idle_down`, true)
     phaserEvents.emit(Event.MY_PLAYER_TEXTURE_CHANGE, this.x, this.y, this.anims.currentAnim.key)
   }
 
-  handleJoystickMovement(movement: JoystickMovement) {
+  handleJoystickMovement(movement: JoystickMovement) { //ジョイスティックからの入力を処理
     this.joystickMovement = movement
   }
 
-  update(
+  update(//プレイヤーキャラクターの動作やインタラクションを更新
     playerSelector: PlayerSelector,
     cursors: NavKeys,
     keyE: Phaser.Input.Keyboard.Key,
@@ -77,9 +78,10 @@ export default class MyPlayer extends Player {
       }
     }
 
-    switch (this.playerBehavior) {
+    //椅子に座る動作と移動を管理
+    switch (this.playerBehavior) {//switch文は、プレイヤーがどの状態にあるかを確認し、それに応じた処理を行う
       case PlayerBehavior.IDLE:
-        // if press E in front of selected chair
+        // if press E in front of selected chair Eを押して椅子が選択されていたら椅子に座る動作
         if (Phaser.Input.Keyboard.JustDown(keyE) && item?.itemType === ItemType.CHAIR) {
           const chairItem = item as Chair
           /**
@@ -126,6 +128,7 @@ export default class MyPlayer extends Player {
           return
         }
 
+        // プレイヤーの移動
         const speed = 200
         let vx = 0
         let vy = 0
@@ -183,7 +186,7 @@ export default class MyPlayer extends Player {
         break
 
       case PlayerBehavior.SITTING:
-        // back to idle if player press E while sitting
+        // back to idle if player press E while sitting　座ってる状態だったらEで立つ
         if (Phaser.Input.Keyboard.JustDown(keyE)) {
           const parts = this.anims.currentAnim.key.split('_')
           parts[1] = 'idle'
@@ -199,6 +202,7 @@ export default class MyPlayer extends Player {
   }
 }
 
+//Phaserのグローバルな名前空間に新しいメソッドを追加・定義
 declare global {
   namespace Phaser.GameObjects {
     interface GameObjectFactory {
@@ -207,6 +211,7 @@ declare global {
   }
 }
 
+//GameObjectFactoryにmyPlayerというメソッドを登録
 Phaser.GameObjects.GameObjectFactory.register(
   'myPlayer',
   function (
@@ -217,11 +222,14 @@ Phaser.GameObjects.GameObjectFactory.register(
     id: string,
     frame?: string | number
   ) {
+    //MyPlayerクラスの新しいインスタンスを作成し、それをsprite変数に格納
     const sprite = new MyPlayer(this.scene, x, y, texture, id, frame)
 
+    //MyPlayerインスタンスを、ゲーム内で描画および更新の対象とするために、それぞれdisplayListとupdateListに追加
     this.displayList.add(sprite)
     this.updateList.add(sprite)
 
+    //物理エンジンの有効化と衝突判定のサイズ設定
     this.scene.physics.world.enableBody(sprite, Phaser.Physics.Arcade.DYNAMIC_BODY)
 
     const collisionScale = [0.5, 0.2]

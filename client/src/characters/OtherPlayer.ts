@@ -12,6 +12,7 @@ export default class OtherPlayer extends Player {
   private connected = false
   private playContainerBody: Phaser.Physics.Arcade.Body
   private myPlayer?: MyPlayer
+//  private backgroundGraphics: Phaser.GameObjects.Graphics
 
   constructor(
     scene: Phaser.Scene,
@@ -27,8 +28,26 @@ export default class OtherPlayer extends Player {
 
     this.playerName.setText(name)
     this.playContainerBody = this.playerContainer.body as Phaser.Physics.Arcade.Body
+
+    // 色付き矩形用グラフィックオブジェクトを作成
+//    this.backgroundGraphics = this.scene.add.graphics()
+//    this.drawBackground()  // 色付き矩形を描画
   }
 
+//  private drawBackground() {
+//    const backgroundColor = 0x0000ff  // 青色
+//    const backgroundAlpha = 0.3  // 透明度
+//    this.backgroundGraphics.clear()
+//    this.backgroundGraphics.fillStyle(backgroundColor, backgroundAlpha)
+//    this.backgroundGraphics.fillRect(
+//      -this.width / 2,
+//      -this.height / 2,
+//      this.width,
+//      this.height
+//    )
+//  }
+
+  //ビデオの接続
   makeCall(myPlayer: MyPlayer, webRTC: WebRTC) {
     this.myPlayer = myPlayer
     const myPlayerId = myPlayer.playerId
@@ -38,7 +57,7 @@ export default class OtherPlayer extends Player {
       myPlayer.readyToConnect &&
       this.readyToConnect &&
       myPlayer.videoConnected &&
-      myPlayerId > this.playerId
+      myPlayerId > this.playerId //わりあてられたIDが大きい方が接続要求を送る
     ) {
       webRTC.connectToNewUser(this.playerId)
       this.connected = true
@@ -46,6 +65,7 @@ export default class OtherPlayer extends Player {
     }
   }
 
+  //プレイヤーのプロパティを更新する
   updateOtherPlayer(field: string, value: number | string | boolean) {
     switch (field) {
       case 'name':
@@ -86,15 +106,22 @@ export default class OtherPlayer extends Player {
     }
   }
 
+  //プレイヤーオブジェクトを削除
   destroy(fromScene?: boolean) {
     this.playerContainer.destroy()
+//    this.backgroundGraphics.destroy()  // 色付き矩形用グラフィックオブジェクトを破棄
 
     super.destroy(fromScene)
   }
 
   /** preUpdate is called every frame for every game object. */
+  //更新処理
   preUpdate(t: number, dt: number) {
     super.preUpdate(t, dt)
+
+    // 位置を更新して背景色を描画
+//    this.backgroundGraphics.setPosition(this.x, this.y)
+//    this.drawBackground()
 
     // if Phaser has not updated the canvas (when the game tab is not active) for more than 1 sec
     // directly snap player to their current locations
@@ -154,6 +181,7 @@ export default class OtherPlayer extends Player {
 
     // while currently connected with myPlayer
     // if myPlayer and the otherPlayer stop overlapping, delete video stream
+    //他のプレイヤーとの接続状態を管理
     this.connectionBufferTime += dt
     if (
       this.connected &&
