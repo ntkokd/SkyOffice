@@ -29,7 +29,7 @@ export default class MyPlayer extends Player {
     id: string,
     frame?: string | number
   ) {
-    super(scene, x, y, texture, id, frame)
+    super(scene, x, y, texture, id, frame)//親クラスのconstructor（player)に渡す
     this.playContainerBody = this.playerContainer.body as Phaser.Physics.Arcade.Body
   }
 
