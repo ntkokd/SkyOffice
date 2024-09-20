@@ -19,9 +19,9 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
   videoConnected = false
   playerName: Phaser.GameObjects.Text
   playerContainer: Phaser.GameObjects.Container
+  private itemImage: Phaser.GameObjects.Image // 身の回りの物を紹介するための画像オブジェクト
   private playerDialogBubble: Phaser.GameObjects.Container
   private timeoutID?: number
-  public comment: string = '' // コメント用のプロパティを追加
 
 
   constructor(
@@ -40,20 +40,27 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
     this.anims.play(`${this.playerTexture}_idle_down`, true)
 
+    //プレイヤーコンテナを作成
     this.playerContainer = this.scene.add.container(this.x, this.y - 30).setDepth(5000)
 
-    // add dialogBubble to playerContainer
-    this.playerDialogBubble = this.scene.add.container(0, 0).setDepth(5000)
-    this.playerContainer.add(this.playerDialogBubble)
+    // 身の回りの物を紹介するための画像を表示
+    this.itemImage = this.scene.add.image(0, -30, 'defaultItem') // デフォルトの紹介画像
+    this.itemImage.setScale(0.05)
+    this.playerContainer.add(this.itemImage)
 
-    // add playerName to playerContainer
+    // プレイヤーの名前を画像の下に表示
     this.playerName = this.scene.add
-      .text(0, 0, '')
+      .text(0, 0, 'Player Name') // 画像の下に名前を配置
       .setFontFamily('Arial')
       .setFontSize(12)
       .setColor('#000000')
       .setOrigin(0.5)
     this.playerContainer.add(this.playerName)
+    
+    // add dialogBubble to playerContainer
+    this.playerDialogBubble = this.scene.add.container(0, 0).setDepth(5000)
+    this.playerContainer.add(this.playerDialogBubble)
+
 
     this.scene.physics.world.enable(this.playerContainer)
     const playContainerBody = this.playerContainer.body as Phaser.Physics.Arcade.Body
@@ -63,9 +70,9 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
       .setOffset(-8, this.height * (1 - collisionScale[1]) + 6)
   }
 
-  // コメントの設定メソッド
-  setComment(comment: string) {
-    this.comment = comment
+  // 身の回りの物を紹介するための画像をセットするメソッド
+  setItemImage(imageData: string) {
+    this.itemImage.setTexture(imageData) // 紹介画像を変更
   }
 
   updateDialogBubble(content: string) {
