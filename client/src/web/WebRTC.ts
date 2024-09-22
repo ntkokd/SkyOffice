@@ -62,17 +62,19 @@ export default class WebRTC {
 
   getUserMedia(alertOnError = true) {
     // ask the browser to get user media
+    // カメラとマイクの使用許可をとる
     navigator.mediaDevices
       ?.getUserMedia({
         video: true,
         audio: true,
       })
+      //ストリームの取得に成功した場合
       .then((stream) => {
-        this.myStream = stream
-        this.addVideoStream(this.myVideo, this.myStream)
-        this.setUpButtons()
-        store.dispatch(setVideoConnected(true))
-        this.network.videoConnected()
+        this.myStream = stream //mystreamプロパティに保存
+        this.addVideoStream(this.myVideo, this.myStream)//ビデオ要素に追加、画面に表示できるようにする
+        this.setUpButtons() //ミュートなどのボタンをセットする
+        store.dispatch(setVideoConnected(true)) //ビデオが接続されたことを示す
+        this.network.videoConnected() //他のプレイヤーに通知
       })
       .catch((error) => {
         if (alertOnError) window.alert('No webcam or microphone found, or permission is blocked')
