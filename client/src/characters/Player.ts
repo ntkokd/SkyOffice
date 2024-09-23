@@ -19,7 +19,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
   videoConnected = false
   playerName: Phaser.GameObjects.Text
   playerContainer: Phaser.GameObjects.Container
-  private itemImage: Phaser.GameObjects.Image // 身の回りの物を紹介するための画像オブジェクト
+  itemImage: Phaser.GameObjects.Image // 身の回りの物を紹介するための画像オブジェクト
   private playerDialogBubble: Phaser.GameObjects.Container
   private timeoutID?: number
 
@@ -45,7 +45,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
     // 身の回りの物を紹介するための画像を表示
     this.itemImage = this.scene.add.image(0, -30, 'defaultItem') // デフォルトの紹介画像
-    //this.itemImage.setScale(0.5)
+    this.itemImage.setScale(70 / this.itemImage.height)
     this.playerContainer.add(this.itemImage)
 
     // プレイヤーの名前を画像の下に表示

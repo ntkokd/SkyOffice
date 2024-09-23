@@ -203,6 +203,25 @@ export default class MyPlayer extends Player {
     }
   }
 
+  setItemImage(imageUrl: string) {
+    console.log('ugoitemasu');
+    const itemImage = this.itemImage;
+    
+    if (imageUrl) {
+      if (this.scene.textures.exists(imageUrl)) {
+        itemImage.setTexture(imageUrl);
+      } else {
+        this.scene.load.image(imageUrl, imageUrl);
+        this.scene.load.once('complete', () => {
+          itemImage.setTexture(imageUrl);
+        });
+        this.scene.load.start();
+      }
+    } else {
+      itemImage.setTexture('defaultItem');
+    }
+  }
+
 }
 
 //Phaserのグローバルな名前空間に新しいメソッドを追加・定義
