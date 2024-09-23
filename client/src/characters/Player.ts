@@ -45,7 +45,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
     // 身の回りの物を紹介するための画像を表示
     this.itemImage = this.scene.add.image(0, -30, 'defaultItem') // デフォルトの紹介画像
-    this.itemImage.setScale(0.05)
+    //this.itemImage.setScale(0.5)
     this.playerContainer.add(this.itemImage)
 
     // プレイヤーの名前を画像の下に表示
@@ -72,7 +72,11 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
   // 身の回りの物を紹介するための画像をセットするメソッド
   setItemImage(imageData: string) {
-    this.itemImage.setTexture(imageData) // 紹介画像を変更
+    if (imageData) {
+      this.itemImage.setTexture(imageData); // 撮影した画像を設定
+    } else {
+      this.itemImage.setTexture('defaultItem'); // デフォルト画像を設定
+    }
   }
 
   updateDialogBubble(content: string) {

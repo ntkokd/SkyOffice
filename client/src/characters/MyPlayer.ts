@@ -21,7 +21,7 @@ export default class MyPlayer extends Player {
   private playContainerBody: Phaser.Physics.Arcade.Body //物理的な動作や衝突を処理
   private chairOnSit?: Chair
   public joystickMovement?: JoystickMovement
-  public comment: string = '' // コメントプロパティを追加
+
 
   constructor(//プレイヤーの位置、テクスチャなどの属性を初期化
     scene: Phaser.Scene,
@@ -30,10 +30,8 @@ export default class MyPlayer extends Player {
     texture: string,
     id: string,
     frame?: string | number,
-    comment: string = '' // コメントを初期化
   ) {
     super(scene, x, y, texture, id, frame)//親クラスのconstructor（player)に渡す
-    this.comment = comment // コメントをセット
     this.playContainerBody = this.playerContainer.body as Phaser.Physics.Arcade.Body
   }
 
@@ -204,11 +202,6 @@ export default class MyPlayer extends Player {
         break
     }
   }
-  // コメントを更新し、イベントを発火するメソッドを追加
-  updateComment(newComment: string) {
-    this.comment = newComment
-    phaserEvents.emit(Event.PLAYER_COMMENT_UPDATE, this.playerId, this.comment)
-  }
 
 }
 
@@ -231,10 +224,9 @@ Phaser.GameObjects.GameObjectFactory.register(
     texture: string,
     id: string,
     frame?: string | number,
-    comment: string = '' // コメントを初期化
   ) {
     //MyPlayerクラスの新しいインスタンスを作成し、それをsprite変数に格納
-    const sprite = new MyPlayer(this.scene, x, y, texture, id, frame, comment)
+    const sprite = new MyPlayer(this.scene, x, y, texture, id, frame)
 
     //MyPlayerインスタンスを、ゲーム内で描画および更新の対象とするために、それぞれdisplayListとupdateListに追加
     this.displayList.add(sprite)
