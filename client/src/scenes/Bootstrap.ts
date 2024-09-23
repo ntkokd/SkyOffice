@@ -20,6 +20,8 @@ export default class Bootstrap extends Phaser.Scene {
       'assets/background/cloud_day.png',
       'assets/background/cloud_day.json'
     )
+    // defaultItemの画像をロード
+    this.load.image('defaultItem', 'assets/objects/defaultItem.png');
     this.load.image('backdrop_day', 'assets/background/backdrop_day.png')
     this.load.atlas(
       'cloud_night',
