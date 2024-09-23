@@ -211,6 +211,7 @@ export default function LoginDialog() {
     } else {
       console.error('Video element is not ready or has zero width/height');
     }
+    
   };
   
   
@@ -312,7 +313,16 @@ export default function LoginDialog() {
                 variant="contained"
                 color="secondary"
                 onClick={() => {
-                  game.myPlayer.setItemImage(capturedImage); // Player.tsのsetItemImageを呼び出して画像を設定
+                  console.log('capturedImage:'); // デバッグ用
+                  console.log('capturedImage:', capturedImage); // デバッグ用
+                  fetch(capturedImage)
+                  .then(res => res.blob())
+                  .then(blob => {
+                    const url = URL.createObjectURL(blob);
+                    // このurlを使って画像を表示したり、Playerクラスに渡したりできます
+                    game.myPlayer.setItemImage(url); // ここでBlobのURLを渡す
+                  });
+                  //game.myPlayer.setItemImage(capturedImage); // Player.tsのsetItemImageを呼び出して画像を設定
                   setCapturedImage(null); // 確認後に状態をリセット
                 }}
               >
