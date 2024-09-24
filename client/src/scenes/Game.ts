@@ -33,7 +33,7 @@ export default class Game extends Phaser.Scene {
   private map!: Phaser.Tilemaps.Tilemap
   myPlayer!: MyPlayer
   private playerSelector!: Phaser.GameObjects.Zone
-  private otherPlayers!: Phaser.Physics.Arcade.Group
+  public otherPlayers!: Phaser.Physics.Arcade.Group
   private otherPlayerMap = new Map<string, OtherPlayer>()
   computerMap = new Map<string, Computer>()
   private whiteboardMap = new Map<string, Whiteboard>()
@@ -43,6 +43,10 @@ export default class Game extends Phaser.Scene {
     super('game')
   }
 
+  public getOtherPlayers() {
+    return this.otherPlayers;
+  } 
+  
   registerKeys() {
     this.cursors = {
       ...this.input.keyboard.createCursorKeys(),//'...'は展開構文（配列や要素を展開して挿入できる

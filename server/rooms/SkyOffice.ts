@@ -16,6 +16,7 @@ import {
   WhiteboardRemoveUserCommand,
 } from './commands/WhiteboardUpdateArrayCommand'
 import ChatMessageUpdateCommand from './commands/ChatMessageUpdateCommand'
+import PlayerUpdateImageCommand from './commands/PlayerUpdateImageCommand';
 
 export class SkyOffice extends Room<OfficeState> {
   private dispatcher = new Dispatcher(this)
@@ -150,6 +151,20 @@ export class SkyOffice extends Room<OfficeState> {
       this.broadcast(
         Message.ADD_CHAT_MESSAGE,
         { clientId: client.sessionId, content: message.content },
+        { except: client }
+      )
+    })
+    // 画像更新メッセージを受け取った際に、PlayerUpdateImageCommandを呼び出す
+    this.onMessage(Message.UPDATE_PLAYER_IMAGE, (client, message: { imageUrl: string }) => {
+      this.dispatcher.dispatch(new PlayerUpdateImageCommand(), {
+        client,
+        imageUrl: message.imageUrl,
+      })
+
+      // 他のクライアントに画像の更新を通知
+      this.broadcast(
+        Message.UPDATE_PLAYER_IMAGE,
+        { playerId: client.sessionId, imageUrl: message.imageUrl },
         { except: client }
       )
     })

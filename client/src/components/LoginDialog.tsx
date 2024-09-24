@@ -290,7 +290,7 @@ export default function LoginDialog() {
                   handleConnectWebcam()
                 }}
               >
-                身の回りの物を撮影しよう
+                画面が表示されないとき
               </Button>
               <video id="videoElement" style={{ display: 'block' }} />
             <Button

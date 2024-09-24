@@ -20,7 +20,7 @@ import {
   pushPlayerLeftMessage,
 } from '../stores/ChatStore'
 import { setWhiteboardUrls } from '../stores/WhiteboardStore'
-
+import Game from '../scenes/Game'
 export default class Network {
   private client: Client
   private room?: Room<IOfficeState>
@@ -180,6 +180,11 @@ export default class Network {
       const computerState = store.getState().computer
       computerState.shareScreenManager?.onUserLeft(clientId)
     })
+
+    // when the server sends updated player image
+    this.room.onMessage(Message.UPDATE_PLAYER_IMAGE, ({ clientId, image }) => {
+      phaserEvents.emit(Event.PLAYER_UPDATED, 'image', image, clientId);
+    });
   }
 
   // method to register event listener and call back function when a item user added
@@ -228,7 +233,17 @@ export default class Network {
     callback: (field: string, value: number | string, key: string) => void,
     context?: any
   ) {
-    phaserEvents.on(Event.PLAYER_UPDATED, callback, context)
+  phaserEvents.on(Event.PLAYER_UPDATED, (field, value, key) => {
+    // プレイヤーの画像更新処理
+    if (field === 'image') {
+      console.log(`Player ${key} updated image to ${value}`);
+      // 画像のURLをセットする処理を追加
+      //Game.otherPlayers[key]?.setItemImage(value as string);
+    }
+
+    // 他のフィールド更新の場合は元のコールバックを呼び出す
+    callback(field, value, key);
+  }, context);
   }
 
   // method to send player updates to Colyseus server
@@ -240,6 +255,12 @@ export default class Network {
   updatePlayerName(currentName: string) {
     this.room?.send(Message.UPDATE_PLAYER_NAME, { name: currentName })
   }
+
+  //サーバーに画像データを送信
+  updatePlayerImage(imageUrl: string) {
+    this.room?.send(Message.UPDATE_PLAYER_IMAGE, { image: imageUrl });
+  }
+
 
   // method to send ready-to-connect signal to Colyseus server
   readyToConnect() {
