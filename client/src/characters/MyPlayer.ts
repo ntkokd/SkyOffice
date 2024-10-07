@@ -16,12 +16,15 @@ import { ItemType } from '../../../types/Items'
 import { NavKeys } from '../../../types/KeyboardState'
 import { JoystickMovement } from '../components/Joystick'
 import { openURL } from '../utils/helpers'
+import { setPlayerImageMap } from '../stores/UserStore';
+import updatePlayerImage from '../services/Network'
 
 export default class MyPlayer extends Player {
   private playContainerBody: Phaser.Physics.Arcade.Body //物理的な動作や衝突を処理
   private chairOnSit?: Chair
   public joystickMovement?: JoystickMovement
-
+  private network: Network;
+  private id: string;
 
   constructor(//プレイヤーの位置、テクスチャなどの属性を初期化
     scene: Phaser.Scene,
@@ -29,10 +32,13 @@ export default class MyPlayer extends Player {
     y: number,
     texture: string,
     id: string,
+    network: Network,
     frame?: string | number,
   ) {
     super(scene, x, y, texture, id, frame)//親クラスのconstructor（player)に渡す
     this.playContainerBody = this.playerContainer.body as Phaser.Physics.Arcade.Body
+    this.network = network;
+    this.id = id;
   }
 
   setPlayerName(name: string) { //プレイヤーの名前を更新し、ゲームの他の部分に通知するイベントを発行
@@ -50,6 +56,29 @@ export default class MyPlayer extends Player {
   handleJoystickMovement(movement: JoystickMovement) { //ジョイスティックからの入力を処理
     this.joystickMovement = movement
   }
+
+  setItemImage(imageUrl: string) {
+    console.log('ugoitemasu');
+    const itemImage = this.itemImage;
+    
+    if (imageUrl) {
+      if (this.scene.textures.exists(imageUrl)) {
+        itemImage.setTexture(imageUrl);
+        // サーバーに画像URLを送信する
+        //updatePlayerImage(imageUrl);
+        store.dispatch(setPlayerImageMap({ id: this.id, image: imageUrl })); // ストアに画像をディスパッチ
+      } else {
+        this.scene.load.image(imageUrl, imageUrl);
+        this.scene.load.once('complete', () => {
+          itemImage.setTexture(imageUrl);
+        });
+        this.scene.load.start();
+      }
+    } else {
+      itemImage.setTexture('defaultItem');
+    }
+  }
+
 
   update(//プレイヤーキャラクターの動作やインタラクションを更新
     playerSelector: PlayerSelector,
@@ -203,24 +232,6 @@ export default class MyPlayer extends Player {
     }
   }
 
-  setItemImage(imageUrl: string) {
-    console.log('ugoitemasu');
-    const itemImage = this.itemImage;
-    
-    if (imageUrl) {
-      if (this.scene.textures.exists(imageUrl)) {
-        itemImage.setTexture(imageUrl);
-      } else {
-        this.scene.load.image(imageUrl, imageUrl);
-        this.scene.load.once('complete', () => {
-          itemImage.setTexture(imageUrl);
-        });
-        this.scene.load.start();
-      }
-    } else {
-      itemImage.setTexture('defaultItem');
-    }
-  }
 
 }
 
@@ -242,10 +253,11 @@ Phaser.GameObjects.GameObjectFactory.register(
     y: number,
     texture: string,
     id: string,
+    network: Network,
     frame?: string | number,
   ) {
     //MyPlayerクラスの新しいインスタンスを作成し、それをsprite変数に格納
-    const sprite = new MyPlayer(this.scene, x, y, texture, id, frame)
+    const sprite = new MyPlayer(this.scene, x, y, texture, id, network, frame)
 
     //MyPlayerインスタンスを、ゲーム内で描画および更新の対象とするために、それぞれdisplayListとupdateListに追加
     this.displayList.add(sprite)

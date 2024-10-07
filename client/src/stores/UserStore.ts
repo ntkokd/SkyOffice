@@ -20,6 +20,7 @@ export const userSlice = createSlice({
     videoConnected: false,
     loggedIn: false,
     playerNameMap: new Map<string, string>(),
+    playerImageMap: new Map<string, string>(), // プレイヤー画像を保存するマップを追加
     showJoystick: window.innerWidth < 650,
   },
   reducers: {//状態の変更を処理する関数
@@ -46,6 +47,12 @@ export const userSlice = createSlice({
     removePlayerNameMap: (state, action: PayloadAction<string>) => {
       state.playerNameMap.delete(sanitizeId(action.payload))
     },
+    setPlayerImageMap: (state, action: PayloadAction<{ id: string; image: string }>) => {
+      state.playerImageMap.set(sanitizeId(action.payload.id), action.payload.image) // 画像URLをマップに保存
+    },
+    removePlayerImageMap: (state, action: PayloadAction<string>) => {
+      state.playerImageMap.delete(sanitizeId(action.payload)) // マップから画像URLを削除
+    },
     setShowJoystick: (state, action: PayloadAction<boolean>) => {
       state.showJoystick = action.payload
     },
@@ -59,6 +66,8 @@ export const {
   setLoggedIn,
   setPlayerNameMap,
   removePlayerNameMap,
+  setPlayerImageMap, // 新しく追加したアクションをエクスポート
+  removePlayerImageMap, // 削除用のアクションもエクスポート
   setShowJoystick,
 } = userSlice.actions
 

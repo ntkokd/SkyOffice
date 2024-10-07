@@ -280,8 +280,15 @@ export default class Game extends Phaser.Scene {
 
   // function to update target position upon receiving player updates
   private handlePlayerUpdated(field: string, value: number | string, id: string) {
+    console.log(`handlePlayerUpdated called with field: ${field}, value: ${value}, id: ${id}`);
     const otherPlayer = this.otherPlayerMap.get(id)
-    otherPlayer?.updateOtherPlayer(field, value)
+    if (field === 'image' && typeof value === 'string') {
+      // 画像の更新処理
+      otherPlayer?.setItemImage(value)
+    } else {
+      // 他のフィールドの更新処理
+      otherPlayer?.updateOtherPlayer(field, value)
+    }
   }
 
   //2つのプレイヤーが重なったときに実行される処理

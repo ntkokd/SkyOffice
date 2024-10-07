@@ -11,5 +11,5 @@ export enum Message {
   VIDEO_CONNECTED,
   ADD_CHAT_MESSAGE,
   SEND_ROOM_DATA,
-  UPDATE_PLAYER_IMAGE="update_player_image",
+  UPDATE_PLAYER_IMAGE,
 }

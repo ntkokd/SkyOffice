@@ -6,7 +6,7 @@ import { ItemType } from '../../../types/Items'
 import WebRTC from '../web/WebRTC'
 import { phaserEvents, Event } from '../events/EventCenter'
 import store from '../stores'
-import { setSessionId, setPlayerNameMap, removePlayerNameMap } from '../stores/UserStore'
+import { setSessionId, setPlayerNameMap, removePlayerNameMap, setPlayerImageMap, } from '../stores/UserStore'
 import {
   setLobbyJoined,
   setJoinedRoomData,
@@ -20,7 +20,6 @@ import {
   pushPlayerLeftMessage,
 } from '../stores/ChatStore'
 import { setWhiteboardUrls } from '../stores/WhiteboardStore'
-import Game from '../scenes/Game'
 export default class Network {
   private client: Client
   private room?: Room<IOfficeState>
@@ -43,6 +42,18 @@ export default class Network {
     phaserEvents.on(Event.MY_PLAYER_NAME_CHANGE, this.updatePlayerName, this)
     phaserEvents.on(Event.MY_PLAYER_TEXTURE_CHANGE, this.updatePlayer, this)
     phaserEvents.on(Event.PLAYER_DISCONNECTED, this.playerStreamDisconnect, this)
+    
+      // プレイヤー画像更新イベントのリスナーを追加
+    phaserEvents.on(Event.PLAYER_UPDATED, (property, value, clientId) => {
+      console.log('value: ',value,'clientID:', clientId)
+      if (property === 'image') {
+        const player = this.getPlayerById(clientId);
+        if (player) {
+          player.image = value; // プレイヤーの image プロパティに値をセット
+          console.log('プレイヤーの image プロパティに値をセット clientID:',clientId)
+        }
+      }
+    });
   }
 
   /**
@@ -89,6 +100,25 @@ export default class Network {
     this.initialize()
   }
 
+  // プレイヤーIDに基づいてプレイヤーを取得するメソッド
+  getPlayerById(clientId: string): IPlayer | undefined {
+    return this.room?.state.players.get(clientId);
+  }
+  
+  sendPlayerImage(imageBlob: Blob) {
+    if (this.room) {
+      // Blob データを ArrayBuffer に変換して送信
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64data = reader.result as string;
+        //console.log("Sending image:", { imageUrl: base64data }); // 追加
+        // UPDATE_PLAYER_IMAGEメッセージでサーバーに送信
+        this.room?.send(Message.UPDATE_PLAYER_IMAGE, { imageUrl: base64data });
+      };
+      reader.readAsDataURL(imageBlob); // Base64形式で読み込む
+    }
+  }
+
   // set up all network listeners before the game starts
   initialize() {
     if (!this.room) return
@@ -107,12 +137,22 @@ export default class Network {
         changes.forEach((change) => {
           const { field, value } = change
           phaserEvents.emit(Event.PLAYER_UPDATED, field, value, key)
+          
+          // ここでimageフィールドの更新があるか確認　後で消す
+          if (field === 'image') {
+            console.log('Image updated:', value); // ログを追加
+          }
 
           // when a new player finished setting up player name
           if (field === 'name' && value !== '') {
             phaserEvents.emit(Event.PLAYER_JOINED, player, key)
             store.dispatch(setPlayerNameMap({ id: key, name: value }))
             store.dispatch(pushPlayerJoinedMessage(value))
+          }
+          // プレイヤーの画像を設定する処理（仮にvalueが画像のURLだと仮定）
+          if (field === 'image' && typeof value === 'string') {
+            console.log('Player image change detected:', key, value); // 画像変更のログを追加
+            store.dispatch(setPlayerImageMap({ id: key, image: value }))
           }
         })
       }
@@ -182,8 +222,19 @@ export default class Network {
     })
 
     // when the server sends updated player image
-    this.room.onMessage(Message.UPDATE_PLAYER_IMAGE, ({ clientId, image }) => {
-      phaserEvents.emit(Event.PLAYER_UPDATED, 'image', image, clientId);
+    this.room.onMessage(Message.UPDATE_PLAYER_IMAGE, (data) => {
+      console.log('受信したデータ:', data);
+      const { playerId, image } = data; // 修正
+      console.log('プレイヤーID:', playerId); // ここで確認
+      console.log('画像データ:', image); // ここで確認
+      const player = this.getPlayerById(playerId); // プレイヤーオブジェクトを取得
+      if (player) {
+        player.image = image; // プレイヤーの画像を設定
+        console.log(`プレイヤー ${playerId} の画像を更新しました`);
+        
+        // phaserEventsを使って、他のコンポーネントに更新イベントを通知
+        phaserEvents.emit(Event.PLAYER_UPDATED, 'image', image, playerId);
+      }
     });
   }
 
@@ -233,17 +284,7 @@ export default class Network {
     callback: (field: string, value: number | string, key: string) => void,
     context?: any
   ) {
-  phaserEvents.on(Event.PLAYER_UPDATED, (field, value, key) => {
-    // プレイヤーの画像更新処理
-    if (field === 'image') {
-      console.log(`Player ${key} updated image to ${value}`);
-      // 画像のURLをセットする処理を追加
-      //Game.otherPlayers[key]?.setItemImage(value as string);
-    }
-
-    // 他のフィールド更新の場合は元のコールバックを呼び出す
-    callback(field, value, key);
-  }, context);
+  phaserEvents.on(Event.PLAYER_UPDATED, callback, context)
   }
 
   // method to send player updates to Colyseus server

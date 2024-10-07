@@ -7,6 +7,7 @@ export interface IPlayer extends Schema {
   anim: string
   readyToConnect: boolean
   videoConnected: boolean
+  image: string  // ここに画像用のプロパティを追加
 }
 
 export interface IComputer extends Schema {

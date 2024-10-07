@@ -12,6 +12,7 @@ export default class OtherPlayer extends Player {
   private connected = false
   private playContainerBody: Phaser.Physics.Arcade.Body
   private myPlayer?: MyPlayer
+  private imageUrl?: string
 //  private backgroundGraphics: Phaser.GameObjects.Graphics
 
   constructor(
@@ -46,7 +47,15 @@ export default class OtherPlayer extends Player {
 //      this.height
 //    )
 //  }
-
+  private loadImage() {
+    console.log('Current imageUrl:', this.imageUrl); 
+    if (this.imageUrl) {
+      // 画像を読み込む
+      this.itemImage.setTexture(this.imageUrl); // imageUrlを使用して画像を設定
+    } else {
+      this.itemImage.setTexture('defaultItem'); // デフォルト画像を設定
+    }
+  }
   //ビデオの接続
   makeCall(myPlayer: MyPlayer, webRTC: WebRTC) {
     this.myPlayer = myPlayer
@@ -101,6 +110,13 @@ export default class OtherPlayer extends Player {
       case 'videoConnected':
         if (typeof value === 'boolean') {
           this.videoConnected = value
+        }
+        break
+      
+      case 'image':
+        console.log('Loading image for player:', this.playerId, value); // 追加
+        if (typeof value === 'string') {
+          this.setItemImage(value); // ここでsetItemImageを使用
         }
         break
     }
@@ -195,6 +211,15 @@ export default class OtherPlayer extends Player {
       this.connected = false
     }
   }
+
+  setItemImage(imageData: string) {
+    if (imageData) {
+      this.itemImage.setTexture(imageData); // 撮影した画像を設定
+    } else {
+      this.itemImage.setTexture('defaultItem'); // デフォルト画像を設定
+    }
+  }
+  
 }
 
 declare global {

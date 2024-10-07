@@ -313,14 +313,15 @@ export default function LoginDialog() {
                 variant="contained"
                 color="secondary"
                 onClick={() => {
-                  console.log('capturedImage:'); // デバッグ用
-                  console.log('capturedImage:', capturedImage); // デバッグ用
                   fetch(capturedImage)
                   .then(res => res.blob())
                   .then(blob => {
                     const url = URL.createObjectURL(blob);
                     // このurlを使って画像を表示したり、Playerクラスに渡したりできます
-                    game.myPlayer.setItemImage(url); // ここでBlobのURLを渡す
+                    game.myPlayer.setItemImage(url); // ここでBlobのURLを渡す        
+                    // ここでBlobをサーバーに送信
+                    game.network.sendPlayerImage(blob); // 送信するコードを追加
+                    console.log('画像をサーバーに送信');
                   });
                   //game.myPlayer.setItemImage(capturedImage); // Player.tsのsetItemImageを呼び出して画像を設定
                   setCapturedImage(null); // 確認後に状態をリセット
@@ -331,7 +332,7 @@ export default function LoginDialog() {
               <Button
                 variant="outlined"
                 color="secondary"
-                onClick={() => setCapturedImage(null)} // キャンセルボタン
+                onClick={() => game.myPlayer.setItemImage('')} // キャンセルボタン
               >
                 キャンセル
               </Button>

@@ -70,13 +70,13 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
       .setOffset(-8, this.height * (1 - collisionScale[1]) + 6)
   }
 
-  // 身の回りの物を紹介するための画像をセットするメソッド
-  setItemImage(imageData: string) {
+
+  updateImage(imageData: string) {
     if (imageData) {
       this.itemImage.setTexture(imageData); // 撮影した画像を設定
     } else {
       this.itemImage.setTexture('defaultItem'); // デフォルト画像を設定
-    }
+    }  // 追加のスタイルやアニメーションをここに記述
   }
 
   updateDialogBubble(content: string) {
