@@ -258,6 +258,7 @@ export default class Game extends Phaser.Scene {
     const otherPlayer = this.add.otherPlayer(newPlayer.x, newPlayer.y, 'adam', id, newPlayer.name)
     this.otherPlayers.add(otherPlayer)
     this.otherPlayerMap.set(id, otherPlayer)
+    console.log('Current otherPlayerMap after addition:', Array.from(this.otherPlayerMap.keys()));
   }
 
   // function to remove the player who left from the otherPlayer group
@@ -280,14 +281,24 @@ export default class Game extends Phaser.Scene {
 
   // function to update target position upon receiving player updates
   private handlePlayerUpdated(field: string, value: number | string, id: string) {
+    console.log('Current otherPlayerMap:', Array.from(this.otherPlayerMap.keys()));
     console.log(`handlePlayerUpdated called with field: ${field}, value: ${value}, id: ${id}`);
     const otherPlayer = this.otherPlayerMap.get(id)
+    if (!otherPlayer) {
+      console.error(`Player with id ${id} not found`);
+      return;
+    }
+  
     if (field === 'image' && typeof value === 'string') {
-      // 画像の更新処理
-      otherPlayer?.setItemImage(value)
+      console.log('Updating image for player:', id);
+      try {
+        otherPlayer.setItemImage(value);
+      } catch (error) {
+        console.error('Error setting item image:', error);
+      }
     } else {
-      // 他のフィールドの更新処理
-      otherPlayer?.updateOtherPlayer(field, value)
+      console.log(`Updating field ${field} for player ${id} with value: ${value}`);
+      otherPlayer.updateOtherPlayer(field, value);
     }
   }
 

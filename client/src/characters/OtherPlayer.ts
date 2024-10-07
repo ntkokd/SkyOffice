@@ -213,8 +213,10 @@ export default class OtherPlayer extends Player {
   }
 
   setItemImage(imageData: string) {
+    console.log('setItemImage called', imageData);
     if (imageData) {
       this.itemImage.setTexture(imageData); // 撮影した画像を設定
+      console.log('画像が設定されました: ', imageData);
     } else {
       this.itemImage.setTexture('defaultItem'); // デフォルト画像を設定
     }

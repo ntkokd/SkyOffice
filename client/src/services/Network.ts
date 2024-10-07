@@ -224,7 +224,7 @@ export default class Network {
     // when the server sends updated player image
     this.room.onMessage(Message.UPDATE_PLAYER_IMAGE, (data) => {
       console.log('受信したデータ:', data);
-      const { playerId, image } = data; // 修正
+      const { playerId, image } = data; 
       console.log('プレイヤーID:', playerId); // ここで確認
       console.log('画像データ:', image); // ここで確認
       const player = this.getPlayerById(playerId); // プレイヤーオブジェクトを取得
@@ -234,6 +234,7 @@ export default class Network {
         
         // phaserEventsを使って、他のコンポーネントに更新イベントを通知
         phaserEvents.emit(Event.PLAYER_UPDATED, 'image', image, playerId);
+        console.log('Event.PLAYER_UPDATED が発行されました:', image, playerId);
       }
     });
   }

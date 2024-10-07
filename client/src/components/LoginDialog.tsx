@@ -310,31 +310,11 @@ export default function LoginDialog() {
             <div>
               <img src={capturedImage} alt="Captured" style={{ width: '200px', height: 'auto' }} />
               <Button
-                variant="contained"
-                color="secondary"
-                onClick={() => {
-                  fetch(capturedImage)
-                  .then(res => res.blob())
-                  .then(blob => {
-                    const url = URL.createObjectURL(blob);
-                    // このurlを使って画像を表示したり、Playerクラスに渡したりできます
-                    game.myPlayer.setItemImage(url); // ここでBlobのURLを渡す        
-                    // ここでBlobをサーバーに送信
-                    game.network.sendPlayerImage(blob); // 送信するコードを追加
-                    console.log('画像をサーバーに送信');
-                  });
-                  //game.myPlayer.setItemImage(capturedImage); // Player.tsのsetItemImageを呼び出して画像を設定
-                  setCapturedImage(null); // 確認後に状態をリセット
-                }}
-              >
-                確認して送信
-              </Button>
-              <Button
                 variant="outlined"
                 color="secondary"
                 onClick={() => game.myPlayer.setItemImage('')} // キャンセルボタン
               >
-                キャンセル
+                取り直す
               </Button>
             </div>
           )}
@@ -342,7 +322,23 @@ export default function LoginDialog() {
         </Right>
       </Content>
       <Bottom>
-        <Button variant="contained" color="secondary" size="large" type="submit">
+        <Button variant="contained" color="secondary" size="large" type="submit"
+          onClick={() => {
+            if (capturedImage) {
+              fetch(capturedImage)
+                .then(res => res.blob())
+                .then(blob => {
+                  const url = URL.createObjectURL(blob);
+                  // プレイヤーに画像を設定
+                  game.myPlayer.setItemImage(url); // BlobのURLを使用
+                  
+                  // 画像をサーバーに送信
+                  game.network.sendPlayerImage(blob);
+                  console.log('画像をサーバーに送信');
+              });
+            }
+          }}
+        >
           Join
         </Button>
       </Bottom>
