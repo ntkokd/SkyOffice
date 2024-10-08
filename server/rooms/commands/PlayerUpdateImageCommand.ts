@@ -7,18 +7,18 @@ import path from 'path';
 
 type Payload = {
   client: Client;
-  imageUrl: string; // Base64などの画像データ
+  image: ArrayBuffer; 
 };
 
 export default class PlayerUpdateImageCommand extends Command<IOfficeState, Payload> {
 
-  execute({ client, imageUrl }: { client: any; imageUrl: string }) {
+  execute({ client, image }: Payload) {
     const room = this.room;
     console.log("Updating player image for client:", client.sessionId);
-
+  
     // 画像をサーバーに保存する処理
-    const imagePath = this.saveImageToServer(imageUrl, client.sessionId);
-    
+    const imagePath = this.saveImageToServer(image, client.sessionId);
+  
     // クライアントに画像の保存先パスを通知する
     room.broadcast(
       Message.UPDATE_PLAYER_IMAGE,
@@ -26,9 +26,9 @@ export default class PlayerUpdateImageCommand extends Command<IOfficeState, Payl
       { except: client }
     );
   }
-  private saveImageToServer(imageUrl: string, sessionId: string): string {
-    // 画像をBase64からバイナリデータに変換
-    const imageBuffer = Buffer.from(imageUrl, 'base64');
+  
+  private saveImageToServer(imageData: ArrayBuffer, sessionId: string): string {
+    const imageBuffer = Buffer.from(imageData);
     const imageFilePath = path.join(__dirname, 'images', `${sessionId}.png`);
     
     // ファイルに書き込む
@@ -39,11 +39,3 @@ export default class PlayerUpdateImageCommand extends Command<IOfficeState, Payl
   }
   
 }
-  //execute(data: Payload) {
-  //  const { client, imageUrl } = data;
-
-  //  const player = this.room.state.players.get(client.sessionId);
-
-  //  if (!player) return;
-    //player.image = imageUrl; // プレイヤーオブジェクトに画像データを追加
-  //}

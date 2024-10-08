@@ -75,7 +75,7 @@ export default class OtherPlayer extends Player {
   }
 
   //プレイヤーのプロパティを更新する
-  updateOtherPlayer(field: string, value: number | string | boolean) {
+  updateOtherPlayer(field: string, value: number | string | boolean | ArrayBuffer) {
     switch (field) {
       case 'name':
         if (typeof value === 'string') {
@@ -115,8 +115,8 @@ export default class OtherPlayer extends Player {
       
       case 'image':
         console.log('Loading image for player:', this.playerId, value); // 追加
-        if (typeof value === 'string') {
-          this.setItemImage(value); // ここでsetItemImageを使用
+        if (value instanceof ArrayBuffer) { // ArrayBufferの場合の処理
+          this.setItemImage(this.playerId, value); // ArrayBufferを渡す
         }
         break
     }
@@ -212,15 +212,36 @@ export default class OtherPlayer extends Player {
     }
   }
 
-  setItemImage(imageData: string) {
-    console.log('setItemImage called', imageData);
-    if (imageData) {
-      this.itemImage.setTexture(imageData); // 撮影した画像を設定
-      console.log('画像が設定されました: ', imageData);
-    } else {
-      this.itemImage.setTexture('defaultItem'); // デフォルト画像を設定
-    }
-  }
+  setItemImage(playerId: string, imageData: ArrayBuffer) {
+    console.log('setItemImage called for player:', playerId);
+
+    // ArrayBufferをBlobに変換
+    const blob = new Blob([imageData], { type: 'image/png' }); // 適切なMIMEタイプを指定
+
+    // Blob URLを生成
+    const url = URL.createObjectURL(blob);
+
+    // ユニークなテクスチャキーを作成 (例えばplayerIdを使う)
+    const textureKey = `playerImage_${playerId}`;
+
+    // HTMLImageElementを作成してBlob URLをソースとして設定
+    const img = new Image();
+    img.src = url;
+
+    img.onload = () => {
+        // 画像がロードされたらユニークなキーでテクスチャとして追加
+        this.scene.textures.addImage(textureKey, img);
+        this.itemImage.setTexture(textureKey); // ユニークなテクスチャキーを使って設定
+        console.log(`画像が設定されました for player ${playerId}:`, url);
+        
+        // URLを解放
+        URL.revokeObjectURL(url);
+    };
+
+    img.onerror = (error) => {
+        console.error(`画像のロードに失敗しました for player ${playerId}:`, error);
+    };
+}
   
 }
 

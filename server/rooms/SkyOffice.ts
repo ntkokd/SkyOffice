@@ -154,21 +154,22 @@ export class SkyOffice extends Room<OfficeState> {
         { except: client }
       )
     })
+
     // 画像更新メッセージを受け取った際に、PlayerUpdateImageCommandを呼び出す
-    this.onMessage(Message.UPDATE_PLAYER_IMAGE, (client, message: { imageUrl: string }) => {
+    this.onMessage(Message.UPDATE_PLAYER_IMAGE, (client, message: { image: ArrayBuffer }) => {
       //console.log("Received update player image message:", message); // デバッグメッセージ
       this.dispatcher.dispatch(new PlayerUpdateImageCommand(), {
         client,
-        imageUrl: message.imageUrl,
+        image: message.image,
       })
 
       // 他のクライアントに画像の更新を通知
       this.broadcast(
         Message.UPDATE_PLAYER_IMAGE,
-        { playerId: client.sessionId, image: message.imageUrl },
+        { playerId: client.sessionId, image: message.image },
         { except: client }
       )
-      console.log('画像更新を送信:', { playerId: client.sessionId, image: message.imageUrl });
+      console.log('画像更新を送信:', { playerId: client.sessionId, image: message.image });
     })
   }
 

@@ -280,7 +280,7 @@ export default class Game extends Phaser.Scene {
   }
 
   // function to update target position upon receiving player updates
-  private handlePlayerUpdated(field: string, value: number | string, id: string) {
+  private handlePlayerUpdated(field: string, value: number | ArrayBuffer, id: string) {
     console.log('Current otherPlayerMap:', Array.from(this.otherPlayerMap.keys()));
     console.log(`handlePlayerUpdated called with field: ${field}, value: ${value}, id: ${id}`);
     const otherPlayer = this.otherPlayerMap.get(id)
@@ -289,10 +289,10 @@ export default class Game extends Phaser.Scene {
       return;
     }
   
-    if (field === 'image' && typeof value === 'string') {
+    if (field === 'image' && value instanceof ArrayBuffer) {
       console.log('Updating image for player:', id);
       try {
-        otherPlayer.setItemImage(value);
+        otherPlayer.setItemImage(id,value);
       } catch (error) {
         console.error('Error setting item image:', error);
       }

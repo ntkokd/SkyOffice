@@ -17,7 +17,6 @@ import { NavKeys } from '../../../types/KeyboardState'
 import { JoystickMovement } from '../components/Joystick'
 import { openURL } from '../utils/helpers'
 import { setPlayerImageMap } from '../stores/UserStore';
-import updatePlayerImage from '../services/Network'
 
 export default class MyPlayer extends Player {
   private playContainerBody: Phaser.Physics.Arcade.Body //物理的な動作や衝突を処理
@@ -65,7 +64,6 @@ export default class MyPlayer extends Player {
       if (this.scene.textures.exists(imageUrl)) {
         itemImage.setTexture(imageUrl);
         // サーバーに画像URLを送信する
-        //updatePlayerImage(imageUrl);
         store.dispatch(setPlayerImageMap({ id: this.id, image: imageUrl })); // ストアに画像をディスパッチ
       } else {
         this.scene.load.image(imageUrl, imageUrl);

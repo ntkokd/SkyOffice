@@ -110,12 +110,11 @@ export default class Network {
       // Blob データを ArrayBuffer に変換して送信
       const reader = new FileReader();
       reader.onloadend = () => {
-        const base64data = reader.result as string;
-        //console.log("Sending image:", { imageUrl: base64data }); // 追加
+        const arrayBuffer = reader.result as ArrayBuffer;
         // UPDATE_PLAYER_IMAGEメッセージでサーバーに送信
-        this.room?.send(Message.UPDATE_PLAYER_IMAGE, { imageUrl: base64data });
+        this.room?.send(Message.UPDATE_PLAYER_IMAGE, { image: arrayBuffer });
       };
-      reader.readAsDataURL(imageBlob); // Base64形式で読み込む
+      reader.readAsArrayBuffer(imageBlob); 
     }
   }
 
@@ -227,6 +226,7 @@ export default class Network {
       const { playerId, image } = data; 
       console.log('プレイヤーID:', playerId); // ここで確認
       console.log('画像データ:', image); // ここで確認
+      
       const player = this.getPlayerById(playerId); // プレイヤーオブジェクトを取得
       if (player) {
         player.image = image; // プレイヤーの画像を設定
@@ -282,7 +282,7 @@ export default class Network {
 
   // method to register event listener and call back function when a player updated
   onPlayerUpdated(
-    callback: (field: string, value: number | string, key: string) => void,
+    callback: (field: string, value: number | ArrayBuffer, key: string) => void,
     context?: any
   ) {
   phaserEvents.on(Event.PLAYER_UPDATED, callback, context)
@@ -297,12 +297,6 @@ export default class Network {
   updatePlayerName(currentName: string) {
     this.room?.send(Message.UPDATE_PLAYER_NAME, { name: currentName })
   }
-
-  //サーバーに画像データを送信
-  updatePlayerImage(imageUrl: string) {
-    this.room?.send(Message.UPDATE_PLAYER_IMAGE, { image: imageUrl });
-  }
-
 
   // method to send ready-to-connect signal to Colyseus server
   readyToConnect() {
