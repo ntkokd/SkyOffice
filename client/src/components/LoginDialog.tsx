@@ -204,15 +204,22 @@ export default function LoginDialog() {
 
       if (context) {
         context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-        const imageData = canvas.toDataURL('image/png');
-        setCapturedImage(imageData); // キャプチャした画像を状態に設定
-        console.log('Captured Image Data:', imageData); // ログでデータ確認
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const url = URL.createObjectURL(blob);
+            setCapturedImage(url); // Blob URLを状態に設定
+            setBlobData(blob); 
+            console.log('Captured Blob:', blob); // Blobデータを確認            
+          }
+        }, 'image/png');
       }
     } else {
       console.error('Video element is not ready or has zero width/height');
     }
     
   };
+  // Blobデータのステートを追加
+const [blobData, setBlobData] = useState<Blob | null>(null);
   
   
 
@@ -324,18 +331,13 @@ export default function LoginDialog() {
       <Bottom>
         <Button variant="contained" color="secondary" size="large" type="submit"
           onClick={() => {
-            if (capturedImage) {
-              fetch(capturedImage)
-                .then(res => res.blob())
-                .then(blob => {
-                  const url = URL.createObjectURL(blob);
-                  // プレイヤーに画像を設定
-                  game.myPlayer.setItemImage(url); // BlobのURLを使用
-                  
-                  // 画像をサーバーに送信
-                  game.network.sendPlayerImage(blob);
-                  console.log('画像をサーバーに送信');
-              });
+            if (blobData && capturedImage) { // ここでBlobデータを確認
+              // BlobのURLを使ってプレイヤーに画像を設定
+              game.myPlayer.setItemImage(capturedImage); 
+              
+              // 画像をサーバーに送信
+              game.network.sendPlayerImage(blobData);
+              console.log('画像をサーバーに送信しました');
             }
           }}
         >
