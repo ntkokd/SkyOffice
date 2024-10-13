@@ -51,9 +51,9 @@ export default class OtherPlayer extends Player {
     console.log('Current imageUrl:', this.imageUrl); 
     if (this.imageUrl) {
       // 画像を読み込む
-      this.itemImage.setTexture(this.imageUrl); // imageUrlを使用して画像を設定
+      this.image.setTexture(this.imageUrl); // imageUrlを使用して画像を設定
     } else {
-      this.itemImage.setTexture('defaultItem'); // デフォルト画像を設定
+      this.image.setTexture('defaultItem'); // デフォルト画像を設定
     }
   }
   //ビデオの接続
@@ -231,7 +231,10 @@ export default class OtherPlayer extends Player {
     img.onload = () => {
         // 画像がロードされたらユニークなキーでテクスチャとして追加
         this.scene.textures.addImage(textureKey, img);
-        this.itemImage.setTexture(textureKey); // ユニークなテクスチャキーを使って設定
+        this.image.setTexture(textureKey); // ユニークなテクスチャキーを使って設定
+        this.image.setVisible(true)
+        this.image.setScale(50 / this.image.height)
+
         console.log(`画像が設定されました for player ${playerId}:`, url);
         
         // URLを解放

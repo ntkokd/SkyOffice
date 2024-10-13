@@ -210,6 +210,9 @@ export default function LoginDialog() {
             setCapturedImage(url); // Blob URLを状態に設定
             setBlobData(blob); 
             console.log('Captured Blob:', blob); // Blobデータを確認            
+            // 画像のテクスチャを直接設定
+            game.myPlayer.image.setTexture(url);
+            console.log('画像を直接設定しました:', url);
           }
         }, 'image/png');
       }
@@ -278,7 +281,6 @@ const [blobData, setBlobData] = useState<Blob | null>(null);
                 color="secondary"
                 onClick={() => {
                   handleConnectWebcam();
-                  game.network.webRTC?.getUserMedia();//カメラのアクセス権限
                 }}
               >
                 カメラをオンにする
@@ -299,27 +301,31 @@ const [blobData, setBlobData] = useState<Blob | null>(null);
               >
                 画面が表示されないとき
               </Button>
-              <video id="videoElement" style={{ display: 'block' }} />
-            <Button
-              variant="outlined"
-              color="secondary"
-              onClick={capturePhoto} // 画像をキャプチャ
-            
-              //onClick={() => {
-                //game.network.webRTC?.getUserMedia()
-              //}}
-            >
-                写真を撮る
-              </Button>     
             </Warning>       
           )}
-          {capturedImage && (
-            <div>
-              <img src={capturedImage} alt="Captured" style={{ width: '200px', height: 'auto' }} />
+          {videoConnected && !capturedImage &&(
+            <Warning>
+              <video id="videoElement" style={{ display: 'block' }} />
               <Button
                 variant="outlined"
                 color="secondary"
-                onClick={() => game.myPlayer.setItemImage('')} // キャンセルボタン
+                onClick={capturePhoto} // 画像をキャプチャ
+              >
+                写真を撮る
+              </Button>  
+            </Warning>
+          )}
+          {capturedImage && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <img src={capturedImage} alt="Captured" style={{ width: '200px', height: 'auto' }} />
+              
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={() => {
+                  game.myPlayer.image.setTexture('')
+                  setCapturedImage(null)
+                }} // キャンセルボタン
               >
                 取り直す
               </Button>
@@ -331,8 +337,11 @@ const [blobData, setBlobData] = useState<Blob | null>(null);
       <Bottom>
         <Button variant="contained" color="secondary" size="large" type="submit"
           onClick={() => {
-            if (blobData && capturedImage) { // ここでBlobデータを確認
+            if (blobData&& capturedImage) { // ここでBlobデータを確認
+              console.log('Blob URL:', capturedImage);
               // BlobのURLを使ってプレイヤーに画像を設定
+ 
+              console.log('myPlayer.image', game.myPlayer.image)
               game.myPlayer.setItemImage(capturedImage); 
               
               // 画像をサーバーに送信

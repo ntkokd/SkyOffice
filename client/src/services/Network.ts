@@ -6,7 +6,7 @@ import { ItemType } from '../../../types/Items'
 import WebRTC from '../web/WebRTC'
 import { phaserEvents, Event } from '../events/EventCenter'
 import store from '../stores'
-import { setSessionId, setPlayerNameMap, removePlayerNameMap, setPlayerImageMap, } from '../stores/UserStore'
+import { setSessionId, setPlayerNameMap, removePlayerNameMap, setPlayerImageMap, removePlayerImageMap } from '../stores/UserStore'
 import {
   setLobbyJoined,
   setJoinedRoomData,
@@ -97,7 +97,23 @@ export default class Network {
       password,
       autoDispose,
     })
+    await this.waitForPlayerRegistration(); // プレイヤー登録の待機
     this.initialize()
+  }
+
+  private waitForPlayerRegistration(): Promise<void> {
+    return new Promise((resolve) => {
+      const checkPlayers = () => {
+        if (this.room && this.room.state.players.size > 0) {
+          resolve();
+        } else {
+          // プレイヤーがまだ登録されていない場合、少し待って再度確認
+          setTimeout(checkPlayers, 100); // 100ミリ秒ごとに確認
+        }
+      };
+  
+      checkPlayers(); // 初回チェックを実行
+    });
   }
 
   // プレイヤーIDに基づいてプレイヤーを取得するメソッド
@@ -113,6 +129,7 @@ export default class Network {
         const arrayBuffer = reader.result as ArrayBuffer;
         // UPDATE_PLAYER_IMAGEメッセージでサーバーに送信
         this.room?.send(Message.UPDATE_PLAYER_IMAGE, { image: arrayBuffer });
+        console.log("Blob Data to Send: ", arrayBuffer);
       };
       reader.readAsArrayBuffer(imageBlob); 
     }
@@ -127,23 +144,33 @@ export default class Network {
     store.dispatch(setSessionId(this.room.sessionId))
     this.webRTC = new WebRTC(this.mySessionId, this)
 
+    const handlePlayerImageChange = (value: any, key: string) => {
+      if (value instanceof ArrayBuffer) {
+        const blob = new Blob([value]);
+        const imageUrl = URL.createObjectURL(blob);
+        console.log('Player image change detected (Blob):', key, imageUrl);
+        store.dispatch(setPlayerImageMap({ id: key, image: imageUrl }));
+      }else{
+        console.log('This image is not ArrayBuffer');
+      }
+    };
+
     // new instance added to the players MapSchema
     this.room.state.players.onAdd = (player: IPlayer, key: string) => {
       if (key === this.mySessionId) return
-
+      console.log(`Player added with ID: ${key}`);
       // track changes on every child object inside the players MapSchema
       player.onChange = (changes) => {
+        console.log(`Changes detected for player ${key}:`, changes);
+        
         changes.forEach((change) => {
           const { field, value } = change
+          console.log(`Field changed: ${field}, Value:`, value); // 追加
           phaserEvents.emit(Event.PLAYER_UPDATED, field, value, key)
-          
-          // ここでimageフィールドの更新があるか確認　後で消す
-          if (field === 'image') {
-            console.log('Image updated:', value); // ログを追加
-          }
 
           // when a new player finished setting up player name
           if (field === 'name' && value !== '') {
+            console.log('kakuninn:', key, value);
             phaserEvents.emit(Event.PLAYER_JOINED, player, key)
             store.dispatch(setPlayerNameMap({ id: key, name: value }))
             store.dispatch(pushPlayerJoinedMessage(value))
@@ -152,6 +179,11 @@ export default class Network {
           if (field === 'image' && typeof value === 'string') {
             console.log('Player image change detected:', key, value); // 画像変更のログを追加
             store.dispatch(setPlayerImageMap({ id: key, image: value }))
+
+          // プレイヤーの画像変更が検出された場合のみ画像処理関数を実行
+          //if (field === 'image') {
+            console.log('aruyo', value)
+            //handlePlayerImageChange(value, key);
           }
         })
       }
@@ -164,6 +196,7 @@ export default class Network {
       this.webRTC?.deleteOnCalledVideoStream(key)
       store.dispatch(pushPlayerLeftMessage(player.name))
       store.dispatch(removePlayerNameMap(key))
+      store.dispatch(removePlayerImageMap(key))
     }
 
     // new instance added to the computers MapSchema
@@ -223,7 +256,7 @@ export default class Network {
     // when the server sends updated player image
     this.room.onMessage(Message.UPDATE_PLAYER_IMAGE, (data) => {
       console.log('受信したデータ:', data);
-      const { playerId, image } = data; 
+      const { image, playerId } = data; 
       console.log('プレイヤーID:', playerId); // ここで確認
       console.log('画像データ:', image); // ここで確認
       

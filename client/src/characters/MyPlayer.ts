@@ -57,23 +57,26 @@ export default class MyPlayer extends Player {
   }
 
   setItemImage(imageUrl: string) {
-    console.log('ugoitemasu');
-    const itemImage = this.itemImage;
+    const image = this.image;
     
     if (imageUrl) {
       if (this.scene.textures.exists(imageUrl)) {
-        itemImage.setTexture(imageUrl);
+        image.setTexture(imageUrl);
+        this.image.setVisible(true)
+        this.image.setScale(50 / this.image.height)
         // サーバーに画像URLを送信する
         store.dispatch(setPlayerImageMap({ id: this.id, image: imageUrl })); // ストアに画像をディスパッチ
       } else {
         this.scene.load.image(imageUrl, imageUrl);
         this.scene.load.once('complete', () => {
-          itemImage.setTexture(imageUrl);
+          image.setTexture(imageUrl);
+          this.image.setVisible(true)
+          this.image.setScale(50 / this.image.height)
         });
         this.scene.load.start();
       }
     } else {
-      itemImage.setTexture('defaultItem');
+      image.setTexture('defaultItem');
     }
   }
 

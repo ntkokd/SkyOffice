@@ -19,7 +19,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
   videoConnected = false
   playerName: Phaser.GameObjects.Text
   playerContainer: Phaser.GameObjects.Container
-  itemImage: Phaser.GameObjects.Image // 身の回りの物を紹介するための画像オブジェクト
+  image: Phaser.GameObjects.Image // 身の回りの物を紹介するための画像オブジェクト
   private playerDialogBubble: Phaser.GameObjects.Container
   private timeoutID?: number
 
@@ -44,9 +44,10 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.playerContainer = this.scene.add.container(this.x, this.y - 30).setDepth(5000)
 
     // 身の回りの物を紹介するための画像を表示
-    this.itemImage = this.scene.add.image(0, -30, 'defaultItem') // デフォルトの紹介画像
-    this.itemImage.setScale(70 / this.itemImage.height)
-    this.playerContainer.add(this.itemImage)
+    this.image = this.scene.add.image(0, -30, 'defaultItem') // デフォルトの紹介画像
+    this.image.setScale(70 / this.image.height)
+    this.image.setVisible(false)
+    this.playerContainer.add(this.image)
 
     // プレイヤーの名前を画像の下に表示
     this.playerName = this.scene.add
@@ -71,13 +72,6 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
 
-  updateImage(imageData: string) {
-    if (imageData) {
-      this.itemImage.setTexture(imageData); // 撮影した画像を設定
-    } else {
-      this.itemImage.setTexture('defaultItem'); // デフォルト画像を設定
-    }  // 追加のスタイルやアニメーションをここに記述
-  }
 
   updateDialogBubble(content: string) {
     this.clearDialogBubble()

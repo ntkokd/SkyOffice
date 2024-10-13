@@ -285,7 +285,6 @@ export default class Game extends Phaser.Scene {
     console.log(`handlePlayerUpdated called with field: ${field}, value: ${value}, id: ${id}`);
     const otherPlayer = this.otherPlayerMap.get(id)
     if (!otherPlayer) {
-      console.error(`Player with id ${id} not found`);
       return;
     }
   
