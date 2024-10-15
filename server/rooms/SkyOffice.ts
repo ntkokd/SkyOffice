@@ -153,6 +153,24 @@ export class SkyOffice extends Room<OfficeState> {
         { except: client }
       )
     })
+
+    this.onMessage(Message.UPDATE_PLAYER_IMAGE, (client, message: { image: ArrayBuffer }) => {
+
+      const player = this.state.players.get(client.sessionId);
+      console.log(player); 
+      console.log(message.image)
+      //if (player) {
+        //player.image = message.image; // image を更新
+      //}
+
+      // 他のクライアントに画像の更新を通知
+      this.broadcast(
+        Message.UPDATE_PLAYER_IMAGE,
+        { playerId: client.sessionId, image: message.image },
+        { except: client }
+      )
+      console.log('画像更新を送信:', { playerId: client.sessionId, image: message.image });
+    })
   }
 
   async onAuth(client: Client, options: { password: string | null }) {

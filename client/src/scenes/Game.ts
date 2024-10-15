@@ -33,7 +33,7 @@ export default class Game extends Phaser.Scene {
   private map!: Phaser.Tilemaps.Tilemap
   myPlayer!: MyPlayer
   private playerSelector!: Phaser.GameObjects.Zone
-  private otherPlayers!: Phaser.Physics.Arcade.Group
+  public otherPlayers!: Phaser.Physics.Arcade.Group
   private otherPlayerMap = new Map<string, OtherPlayer>()
   computerMap = new Map<string, Computer>()
   private whiteboardMap = new Map<string, Whiteboard>()
@@ -43,6 +43,10 @@ export default class Game extends Phaser.Scene {
     super('game')
   }
 
+  public getOtherPlayers() {
+    return this.otherPlayers;
+  } 
+  
   registerKeys() {
     this.cursors = {
       ...this.input.keyboard.createCursorKeys(),//'...'は展開構文（配列や要素を展開して挿入できる
@@ -254,6 +258,7 @@ export default class Game extends Phaser.Scene {
     const otherPlayer = this.add.otherPlayer(newPlayer.x, newPlayer.y, 'adam', id, newPlayer.name)
     this.otherPlayers.add(otherPlayer)
     this.otherPlayerMap.set(id, otherPlayer)
+    console.log('Current otherPlayerMap after addition:', Array.from(this.otherPlayerMap.keys()));
   }
 
   // function to remove the player who left from the otherPlayer group
@@ -275,9 +280,25 @@ export default class Game extends Phaser.Scene {
   }
 
   // function to update target position upon receiving player updates
-  private handlePlayerUpdated(field: string, value: number | string, id: string) {
+  private handlePlayerUpdated(field: string, value: number | ArrayBuffer, id: string) {
+    console.log('Current otherPlayerMap:', Array.from(this.otherPlayerMap.keys()));
+    console.log(`handlePlayerUpdated called with field: ${field}, value: ${value}, id: ${id}`);
     const otherPlayer = this.otherPlayerMap.get(id)
-    otherPlayer?.updateOtherPlayer(field, value)
+    if (!otherPlayer) {
+      return;
+    }
+  
+    if (field === 'image' && value instanceof ArrayBuffer) {
+      console.log('Updating image for player:', id);
+      try {
+        otherPlayer.setItemImage(id,value);
+      } catch (error) {
+        console.error('Error setting item image:', error);
+      }
+    } else {
+      console.log(`Updating field ${field} for player ${id} with value: ${value}`);
+      otherPlayer.updateOtherPlayer(field, value);
+    }
   }
 
   //2つのプレイヤーが重なったときに実行される処理

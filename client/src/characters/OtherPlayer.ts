@@ -12,6 +12,7 @@ export default class OtherPlayer extends Player {
   private connected = false
   private playContainerBody: Phaser.Physics.Arcade.Body
   private myPlayer?: MyPlayer
+  private imageUrl?: string
 //  private backgroundGraphics: Phaser.GameObjects.Graphics
 
   constructor(
@@ -46,7 +47,15 @@ export default class OtherPlayer extends Player {
 //      this.height
 //    )
 //  }
-
+  private loadImage() {
+    console.log('Current imageUrl:', this.imageUrl); 
+    if (this.imageUrl) {
+      // 画像を読み込む
+      this.image.setTexture(this.imageUrl); // imageUrlを使用して画像を設定
+    } else {
+      this.image.setTexture('defaultItem'); // デフォルト画像を設定
+    }
+  }
   //ビデオの接続
   makeCall(myPlayer: MyPlayer, webRTC: WebRTC) {
     this.myPlayer = myPlayer
@@ -66,7 +75,7 @@ export default class OtherPlayer extends Player {
   }
 
   //プレイヤーのプロパティを更新する
-  updateOtherPlayer(field: string, value: number | string | boolean) {
+  updateOtherPlayer(field: string, value: number | string | boolean | ArrayBuffer) {
     switch (field) {
       case 'name':
         if (typeof value === 'string') {
@@ -101,6 +110,13 @@ export default class OtherPlayer extends Player {
       case 'videoConnected':
         if (typeof value === 'boolean') {
           this.videoConnected = value
+        }
+        break
+      
+      case 'image':
+        console.log('Loading image for player:', this.playerId, value); // 追加
+        if (value instanceof ArrayBuffer) { // ArrayBufferの場合の処理
+          this.setItemImage(this.playerId, value); // ArrayBufferを渡す
         }
         break
     }
@@ -195,6 +211,41 @@ export default class OtherPlayer extends Player {
       this.connected = false
     }
   }
+
+  setItemImage(playerId: string, imageData: ArrayBuffer) {
+    console.log('setItemImage called for player:', playerId);
+
+    // ArrayBufferをBlobに変換
+    const blob = new Blob([imageData], { type: 'image/png' }); // 適切なMIMEタイプを指定
+
+    // Blob URLを生成
+    const url = URL.createObjectURL(blob);
+
+    // ユニークなテクスチャキーを作成 (例えばplayerIdを使う)
+    const textureKey = `playerImage_${playerId}`;
+
+    // HTMLImageElementを作成してBlob URLをソースとして設定
+    const img = new Image();
+    img.src = url;
+
+    img.onload = () => {
+        // 画像がロードされたらユニークなキーでテクスチャとして追加
+        this.scene.textures.addImage(textureKey, img);
+        this.image.setTexture(textureKey); // ユニークなテクスチャキーを使って設定
+        this.image.setVisible(true)
+        this.image.setScale(50 / this.image.height)
+
+        console.log(`画像が設定されました for player ${playerId}:`, url);
+        
+        // URLを解放
+        URL.revokeObjectURL(url);
+    };
+
+    img.onerror = (error) => {
+        console.error(`画像のロードに失敗しました for player ${playerId}:`, error);
+    };
+}
+  
 }
 
 declare global {
