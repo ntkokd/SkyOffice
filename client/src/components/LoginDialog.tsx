@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
 import TextField from '@mui/material/TextField'
 import Button from '@mui/material/Button'
@@ -22,6 +22,8 @@ import { getAvatarString, getColorByString } from '../util'
 
 import phaserGame from '../PhaserGame'
 import Game from '../scenes/Game'
+import Video from './Video'
+import { setVideoConnected } from '../stores/UserStore'
 
 const Wrapper = styled.form`
   position: fixed;
@@ -150,6 +152,18 @@ export default function LoginDialog() {
   const roomName = useAppSelector((state) => state.room.roomName)
   const roomDescription = useAppSelector((state) => state.room.roomDescription)
   const game = phaserGame.scene.keys.game as Game
+  const [capturedImage, setCapturedImage] = useState<string | null>(null)
+  const [stream, setStream] = useState<MediaStream | null>(null)
+
+  useEffect(() => {
+    if (videoConnected && stream) {
+      const videoElement = document.getElementById('videoElement') as HTMLVideoElement
+      if (videoElement) {
+        videoElement.srcObject = stream
+        videoElement.play()
+      }
+    }
+  }, [videoConnected, stream])
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -164,6 +178,53 @@ export default function LoginDialog() {
       dispatch(setLoggedIn(true))
     }
   }
+
+  const handleConnectWebcam = async () => {
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true })
+      setStream(mediaStream) // ストリームをステートに保存
+      //dispatch(setVideoConnected(true)) // 接続状態を更新
+      const videoElement = document.getElementById('videoElement') as HTMLVideoElement
+      if (videoElement) {
+        videoElement.srcObject = stream; // ビデオ要素にストリームを設定
+        videoElement.play();
+      }
+    } catch (error) {
+      console.error('Error accessing webcam:', error)
+    }
+  }
+
+  const capturePhoto = () => {
+    const videoElement = document.getElementById('videoElement') as HTMLVideoElement;
+    if (videoElement.videoWidth > 0 && videoElement.videoHeight > 0) {
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      canvas.width = videoElement.videoWidth;
+      canvas.height = videoElement.videoHeight;
+
+      if (context) {
+        context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const url = URL.createObjectURL(blob);
+            setCapturedImage(url); // Blob URLを状態に設定
+            setBlobData(blob); 
+            console.log('Captured Blob:', blob); // Blobデータを確認            
+            // 画像のテクスチャを直接設定
+            game.myPlayer.image.setTexture(url);
+            console.log('画像を直接設定しました:', url);
+          }
+        }, 'image/png');
+      }
+    } else {
+      console.error('Video element is not ready or has zero width/height');
+    }
+    
+  };
+  // Blobデータのステートを追加
+const [blobData, setBlobData] = useState<Blob | null>(null);
+  
+  
 
   return (
     <Wrapper onSubmit={handleSubmit}>
@@ -219,23 +280,76 @@ export default function LoginDialog() {
                 variant="outlined"
                 color="secondary"
                 onClick={() => {
-                  game.network.webRTC?.getUserMedia()
+                  handleConnectWebcam();
                 }}
               >
-                Connect Webcam
+                カメラをオンにする
               </Button>
             </Warning>
           )}
 
+
           {videoConnected && (
             <Warning>
               <Alert variant="outlined">Webcam connected!</Alert>
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={() => {
+                  handleConnectWebcam()
+                }}
+              >
+                画面が表示されないとき
+              </Button>
+            </Warning>       
+          )}
+          {videoConnected && !capturedImage &&(
+            <Warning>
+              <video id="videoElement" style={{ display: 'block' }} />
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={capturePhoto} // 画像をキャプチャ
+              >
+                写真を撮る
+              </Button>  
             </Warning>
           )}
+          {capturedImage && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <img src={capturedImage} alt="Captured" style={{ width: '200px', height: 'auto' }} />
+              
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={() => {
+                  game.myPlayer.image.setTexture('')
+                  setCapturedImage(null)
+                }} // キャンセルボタン
+              >
+                取り直す
+              </Button>
+            </div>
+          )}
+          
         </Right>
       </Content>
       <Bottom>
-        <Button variant="contained" color="secondary" size="large" type="submit">
+        <Button variant="contained" color="secondary" size="large" type="submit"
+          onClick={() => {
+            if (blobData&& capturedImage) { // ここでBlobデータを確認
+              console.log('Blob URL:', capturedImage);
+              // BlobのURLを使ってプレイヤーに画像を設定
+ 
+              console.log('myPlayer.image', game.myPlayer.image)
+              game.myPlayer.setItemImage(capturedImage); 
+              
+              // 画像をサーバーに送信
+              game.network.sendPlayerImage(blobData);
+              console.log('画像をサーバーに送信しました');
+            }
+          }}
+        >
           Join
         </Button>
       </Bottom>

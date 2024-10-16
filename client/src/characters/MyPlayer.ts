@@ -16,12 +16,14 @@ import { ItemType } from '../../../types/Items'
 import { NavKeys } from '../../../types/KeyboardState'
 import { JoystickMovement } from '../components/Joystick'
 import { openURL } from '../utils/helpers'
+import { setPlayerImageMap } from '../stores/UserStore';
 
 export default class MyPlayer extends Player {
   private playContainerBody: Phaser.Physics.Arcade.Body //物理的な動作や衝突を処理
   private chairOnSit?: Chair
   public joystickMovement?: JoystickMovement
-  public comment: string = '' // コメントプロパティを追加
+  private network: Network;
+  private id: string;
 
   constructor(//プレイヤーの位置、テクスチャなどの属性を初期化
     scene: Phaser.Scene,
@@ -29,12 +31,13 @@ export default class MyPlayer extends Player {
     y: number,
     texture: string,
     id: string,
+    network: Network,
     frame?: string | number,
-    comment: string = '' // コメントを初期化
   ) {
     super(scene, x, y, texture, id, frame)//親クラスのconstructor（player)に渡す
-    this.comment = comment // コメントをセット
     this.playContainerBody = this.playerContainer.body as Phaser.Physics.Arcade.Body
+    this.network = network;
+    this.id = id;
   }
 
   setPlayerName(name: string) { //プレイヤーの名前を更新し、ゲームの他の部分に通知するイベントを発行
@@ -52,6 +55,31 @@ export default class MyPlayer extends Player {
   handleJoystickMovement(movement: JoystickMovement) { //ジョイスティックからの入力を処理
     this.joystickMovement = movement
   }
+
+  setItemImage(imageUrl: string) {
+    const image = this.image;
+    
+    if (imageUrl) {
+      if (this.scene.textures.exists(imageUrl)) {
+        image.setTexture(imageUrl);
+        this.image.setVisible(true)
+        this.image.setScale(50 / this.image.height)
+        // サーバーに画像URLを送信する
+        store.dispatch(setPlayerImageMap({ id: this.id, image: imageUrl })); // ストアに画像をディスパッチ
+      } else {
+        this.scene.load.image(imageUrl, imageUrl);
+        this.scene.load.once('complete', () => {
+          image.setTexture(imageUrl);
+          this.image.setVisible(true)
+          this.image.setScale(50 / this.image.height)
+        });
+        this.scene.load.start();
+      }
+    } else {
+      image.setTexture('defaultItem');
+    }
+  }
+
 
   update(//プレイヤーキャラクターの動作やインタラクションを更新
     playerSelector: PlayerSelector,
@@ -204,11 +232,7 @@ export default class MyPlayer extends Player {
         break
     }
   }
-  // コメントを更新し、イベントを発火するメソッドを追加
-  updateComment(newComment: string) {
-    this.comment = newComment
-    phaserEvents.emit(Event.PLAYER_COMMENT_UPDATE, this.playerId, this.comment)
-  }
+
 
 }
 
@@ -230,11 +254,11 @@ Phaser.GameObjects.GameObjectFactory.register(
     y: number,
     texture: string,
     id: string,
+    network: Network,
     frame?: string | number,
-    comment: string = '' // コメントを初期化
   ) {
     //MyPlayerクラスの新しいインスタンスを作成し、それをsprite変数に格納
-    const sprite = new MyPlayer(this.scene, x, y, texture, id, frame, comment)
+    const sprite = new MyPlayer(this.scene, x, y, texture, id, network, frame)
 
     //MyPlayerインスタンスを、ゲーム内で描画および更新の対象とするために、それぞれdisplayListとupdateListに追加
     this.displayList.add(sprite)
