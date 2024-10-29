@@ -183,7 +183,7 @@ export default function LoginDialog() {
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true })
       setStream(mediaStream) // ストリームをステートに保存
-      //dispatch(setVideoConnected(true)) // 接続状態を更新
+      dispatch(setVideoConnected(true)) // 接続状態を更新
       const videoElement = document.getElementById('videoElement') as HTMLVideoElement
       if (videoElement) {
         videoElement.srcObject = stream; // ビデオ要素にストリームを設定
